@@ -58,7 +58,6 @@ def get_computer_move(board, symbol):
         if board[row][col] == " "
     ]
     if HARD_MODE:
-        #Impliment hard mode
         #look for a win then block
         for symbol in [symbols["Computer"], symbols["Player"]]:    
             for row, col in empty_cells:
@@ -76,8 +75,17 @@ def get_computer_move(board, symbol):
         
         if not empty_cells:
             return None  # no moves left
-        
+    #normal mode    
     else:
+        #look for win
+        for symbol in [symbols["Computer"]]:    
+            for row, col in empty_cells:
+                board[row][col] = symbol
+                if check_winner(board):
+                    board[row][col] = " "
+                    return row, col
+                else:
+                    board[row][col] = " "
         if not empty_cells:
             return None  # no moves left
 
