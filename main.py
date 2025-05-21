@@ -12,8 +12,8 @@ def clear_terminal():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def print_board(board):
-    for i in range(len(board)):
-        print(" | ".join(board[i]))
+    for i, row in enumerate(board):
+        print(" | ".join(row))
         if i < len(board) - 1:
             print("-" * 9)
 
@@ -50,44 +50,43 @@ def get_player_move(board):
         except ValueError:
             print("Invalid input format. Use row,col like 1,2.")
 
-def get_computer_move(board, symbol):
+def get_computer_move(board, symbols):
     empty_cells = [
         (row, col)
         for row in range(3)
         for col in range(3)
         if board[row][col] == " "
     ]
+
+    def try_move(symbol):
+        for row, col in empty_cells:
+            board[row][col] = symbol
+            if check_winner(board):
+                board[row][col] = " "
+                return row, col
+            board[row][col] = " "
+        return None
+    
     if HARD_MODE:
-        #look for a win then block
+        # Try to win, then block opponent
         for symbol in [symbols["Computer"], symbols["Player"]]:    
-            for row, col in empty_cells:
-                board[row][col] = symbol
-                if check_winner(board):
-                    board[row][col] = " "
-                    return row, col
-                else:
-                    board[row][col] = " "
-        #look for a corner
+            move = try_move(symbol)
+            if move:
+                return move
+        # Take a corner if available
         corners = [(0, 0), (0, 2), (2, 0), (2, 2)]
         for row, col in corners:
             if board[row][col] == " ":
                 return row, col
-        
         if not empty_cells:
-            return None  # no moves left
-    #normal mode    
+            return None
     else:
-        #look for win
-        for symbol in [symbols["Computer"]]:    
-            for row, col in empty_cells:
-                board[row][col] = symbol
-                if check_winner(board):
-                    board[row][col] = " "
-                    return row, col
-                else:
-                    board[row][col] = " "
+        # Try to win
+        move = try_move(symbols["Computer"])
+        if move:
+            return move
         if not empty_cells:
-            return None  # no moves left
+            return None
 
     return random.choice(empty_cells)
 
@@ -111,26 +110,22 @@ def check_winner(board):
 
     return None  # No winner yet
 
-winner = None
-while winner is None:
+def main():
     clear_terminal()
     board = [[" " for _ in range(3)] for _ in range(3)]
     player_1, player_2, symbols = player_order()
+    winner = None
     for turn in range(9):
         current_player = player_1 if turn % 2 == 0 else player_2
-        symbol = symbols[current_player]
         if turn == 0:
-            print(f"{player_1} goes first and will be X.")
-            #computer move
+            print(f"{player_1} goes first and will be X")
         if current_player == "Computer":
-            row, col = get_computer_move(board, symbol)
-            board[row][col] = symbols[current_player]
+            row, col = get_computer_move(board, symbols)
         else:
-            #player move
             print_board(board)
             row, col = get_player_move(board)
-            board[row][col] = symbols[current_player]
             clear_terminal()
+        board[row][col] = symbols[current_player]
 
         winner_symbol = check_winner(board)
         if winner_symbol:
@@ -140,6 +135,10 @@ while winner is None:
             print(f"{winner} is the winner!")
             break
         if all(cell != " " for row in board for cell in row):
-            winner = "tie"
+            clear_terminal()
+            print_board(board)
             print("It's a tie!")
             break
+
+if __name__ == "__main__":
+    main()
