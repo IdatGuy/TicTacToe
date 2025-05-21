@@ -133,11 +133,17 @@ def main():
             clear_terminal()
             print_board(board)
             print(f"{winner} is the winner!")
+            replay = input("Play again? (y/n): ").strip().lower()
+            if replay == "y":
+                main()
             break
         if all(cell != " " for row in board for cell in row):
             clear_terminal()
             print_board(board)
             print("It's a tie!")
+            replay = input("Play again? (y/n): ").strip().lower()
+            if replay == "y":
+                main()
             break
 
 if __name__ == "__main__":
